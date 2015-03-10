@@ -50,7 +50,11 @@ OnMapReadyCallback {
 	private UiSettings mUiSettings;
 	
 	private Bitmap smallHeartBitmap;
+	private ParseObject partnerObject;
 	private Marker partnerMarker;
+	private LatLng partnerLocation;
+	
+	private GoogleMap mMap;
 
 	// These settings are the same as the settings for the map. They will in fact give you updates
 	// at the maximal rates currently possible.
@@ -90,8 +94,11 @@ OnMapReadyCallback {
 
 	@Override
 	public void onMapReady(GoogleMap map) {
+		mMap = map;
+		
 		map.setMyLocationEnabled(true);
 		map.setOnMyLocationButtonClickListener(this);
+		
 		
 		mUiSettings = map.getUiSettings();
 		mUiSettings.setZoomControlsEnabled(true);
@@ -100,12 +107,25 @@ OnMapReadyCallback {
 		Bitmap b=bd.getBitmap();
 		smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
 		
-		LatLng MELBOURNE = new LatLng(-37.813, 144.962);
-		partnerMarker = map.addMarker(new MarkerOptions()
-		                          .position(MELBOURNE)
-		                          .title("Bhargav :)")
-		                          .snippet("Your bubu")
-		                          .icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
+		query.getInBackground(Utils.sloc, new GetCallback<ParseObject>() {
+		  public void done(ParseObject object, ParseException e) {
+		    if (e == null) {
+		    	partnerObject = object;
+		    	Utils.logv(classname, "Partner location retrival successful");
+		    	ParseGeoPoint partnerPoint = object.getParseGeoPoint("location");
+		    	partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+				partnerMarker = mMap.addMarker(new MarkerOptions()
+				                          .position(partnerLocation)
+				                          .title("Bhargav :)")
+				                          .snippet("Your bubu")
+				                          .icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+		    } else {
+		    	e.printStackTrace();
+				Utils.logv(classname, "Partner location retrival failed",e);
+		    }
+		  }
+		});
 	}
 
 	/**
