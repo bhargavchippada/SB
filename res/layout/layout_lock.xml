@@ -11,6 +11,4 @@
         android:text="Are you a S or B?"
         android:textSize="28sp"
         android:textColor="@android:color/white"/>
-	<EditText 
-	    android:id=""/>
 </LinearLayout>
