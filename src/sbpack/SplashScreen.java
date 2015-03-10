@@ -5,13 +5,14 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.sb.R;
+import com.parse.ParseObject;
 
 public class SplashScreen extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.layout_logosplash);
-
+		
 		Thread logoTimer=new Thread(){
 			public void run(){
 				try{

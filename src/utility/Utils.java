@@ -3,6 +3,10 @@ package utility;
 import android.util.Log;
 
 public class Utils {
+	
+	public static String bloc = "yhsPYjqyT1";
+	public static String sloc = "ruvfqOS1Pt";
+	
 	/**
 	 * Prints debugging log messages
 	 * 
