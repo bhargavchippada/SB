@@ -195,19 +195,19 @@ public final class R {
 		public static final int abc_config_showMenuShortcutsWhenKeyboardPresent = 0x7f0a0003;
 	}
 	public static final class color {
-		public static final int abc_background_cache_hint_selector_material_dark = 0x7f080048;
-		public static final int abc_background_cache_hint_selector_material_light = 0x7f080049;
+		public static final int abc_background_cache_hint_selector_material_dark = 0x7f080049;
+		public static final int abc_background_cache_hint_selector_material_light = 0x7f08004a;
 		public static final int abc_input_method_navigation_guard = 0x7f08001a;
-		public static final int abc_primary_text_disable_only_material_dark = 0x7f08004a;
-		public static final int abc_primary_text_disable_only_material_light = 0x7f08004b;
-		public static final int abc_primary_text_material_dark = 0x7f08004c;
-		public static final int abc_primary_text_material_light = 0x7f08004d;
-		public static final int abc_search_url_text = 0x7f08004e;
+		public static final int abc_primary_text_disable_only_material_dark = 0x7f08004b;
+		public static final int abc_primary_text_disable_only_material_light = 0x7f08004c;
+		public static final int abc_primary_text_material_dark = 0x7f08004d;
+		public static final int abc_primary_text_material_light = 0x7f08004e;
+		public static final int abc_search_url_text = 0x7f08004f;
 		public static final int abc_search_url_text_normal = 0x7f080017;
 		public static final int abc_search_url_text_pressed = 0x7f080019;
 		public static final int abc_search_url_text_selected = 0x7f080018;
-		public static final int abc_secondary_text_material_dark = 0x7f08004f;
-		public static final int abc_secondary_text_material_light = 0x7f080050;
+		public static final int abc_secondary_text_material_dark = 0x7f080050;
+		public static final int abc_secondary_text_material_light = 0x7f080051;
 		public static final int accent_material_dark = 0x7f080026;
 		public static final int accent_material_light = 0x7f080025;
 		public static final int background_floating_material_dark = 0x7f08001d;
@@ -444,7 +444,7 @@ public final class R {
 		public static final int abc_search_dropdown_item_icons_2line = 0x7f030014;
 		public static final int abc_search_view = 0x7f030015;
 		public static final int abc_simple_dropdown_hint = 0x7f030016;
-		public static final int support_simple_spinner_dropdown_item = 0x7f030017;
+		public static final int support_simple_spinner_dropdown_item = 0x7f030019;
 	}
 	public static final class string {
 		public static final int abc_action_bar_home_description = 0x7f070024;
