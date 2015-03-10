@@ -1,11 +1,13 @@
 package sbpack;
 
+import sbpack.LatLngInterpolator.Spherical;
+import utility.MarkerAnimation;
 import utility.Utils;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.LevelListDrawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -19,12 +21,14 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -46,21 +50,26 @@ OnMapReadyCallback {
 	public static String classname = "HomePage";
 	private GoogleApiClient mGoogleApiClient;
 	private TextView txtvw_your_location;
-	private ParseGeoPoint mypoint;
+	private ParseGeoPoint myLocation;
+	private ParseObject myObject;
+	private LatLng myLatLng;
+	private Marker myMarker;
 	private UiSettings mUiSettings;
-	
+
 	private Bitmap smallHeartBitmap;
 	private ParseObject partnerObject;
 	private Marker partnerMarker;
 	private LatLng partnerLocation;
-	
+
 	private GoogleMap mMap;
+	final Handler handler = new Handler();
+	private CameraPosition cameraPosition;
 
 	// These settings are the same as the settings for the map. They will in fact give you updates
 	// at the maximal rates currently possible.
 	private static final LocationRequest REQUEST = LocationRequest.create()
 			.setInterval(5000)         // 5 seconds
-			.setFastestInterval(16*30)    // 16ms = 60fps
+			.setFastestInterval(16*30)    // 16ms = 60fps; i slowed down the rate by 30 times
 			.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 	@Override
@@ -78,6 +87,10 @@ OnMapReadyCallback {
 		.addConnectionCallbacks(this)
 		.addOnConnectionFailedListener(this)
 		.build();
+
+		BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_curved_heart);
+		Bitmap b=bd.getBitmap();
+		smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
 	}
 
 	@Override
@@ -95,48 +108,122 @@ OnMapReadyCallback {
 	@Override
 	public void onMapReady(GoogleMap map) {
 		mMap = map;
-		
+
 		map.setMyLocationEnabled(true);
 		map.setOnMyLocationButtonClickListener(this);
-		
-		
+
 		mUiSettings = map.getUiSettings();
 		mUiSettings.setZoomControlsEnabled(true);
-		
-		BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_curved_heart);
-		Bitmap b=bd.getBitmap();
-		smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
-		
-		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
-		query.getInBackground(Utils.sloc, new GetCallback<ParseObject>() {
-		  public void done(ParseObject object, ParseException e) {
-		    if (e == null) {
-		    	partnerObject = object;
-		    	Utils.logv(classname, "Partner location retrival successful");
-		    	ParseGeoPoint partnerPoint = object.getParseGeoPoint("location");
-		    	partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
-				partnerMarker = mMap.addMarker(new MarkerOptions()
-				                          .position(partnerLocation)
-				                          .title("Bhargav :)")
-				                          .snippet("Your bubu")
-				                          .icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
-		    } else {
-		    	e.printStackTrace();
-				Utils.logv(classname, "Partner location retrival failed",e);
-		    }
-		  }
-		});
+
+		cameraPosition = new CameraPosition.Builder()
+		.target(Utils.center).zoom(Utils.zoom).bearing(Utils.bearing)
+		.build();
+		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+		//Retrieve partners last location
+		final ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
+		Thread partnerData=new Thread(){
+			public void run(){
+				while(true){
+					if(partnerObject==null){
+						try {
+							partnerObject = query.get(Utils.sloc);
+							partnerObject.pinInBackground();
+							// Success!
+							Utils.logv(classname, "Partner location retrival successful");
+							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
+							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+							handler.post(new Runnable() {
+								public void run() {
+									partnerMarker = mMap.addMarker(new MarkerOptions()
+									.position(partnerLocation)
+									.title("Bhargav :)")
+									.snippet("Your bubu")
+									.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+								};
+							});
+
+						} catch (ParseException e1) {
+							e1.printStackTrace();
+							Utils.logv(classname, "Partner location retrival failed",e1);
+						}
+					}else{
+						try {
+							partnerObject.fetch();
+							// Success!
+							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
+							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+							Utils.logv(classname, "Partner object fetch successful");
+							handler.post(new Runnable() {
+								public void run() {
+									int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+									if (currentapiVersion < android.os.Build.VERSION_CODES.HONEYCOMB_MR2){
+										MarkerAnimation.animateMarkerToGB(partnerMarker,partnerLocation, new Spherical());
+									} else if(currentapiVersion < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+										MarkerAnimation.animateMarkerToHC(partnerMarker,partnerLocation,new Spherical());
+									} else{
+										MarkerAnimation.animateMarkerToICS(partnerMarker,partnerLocation,new Spherical());
+									}
+								};
+							});
+						} catch (ParseException e1) {
+							e1.printStackTrace();
+							// Fail!
+							Utils.logv(classname, "Partner object fetch failed",e1);
+						}
+					}
+
+					try {
+						Thread.sleep(16*30);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						Utils.logv(classname, "Partner Thread sleep interrupted",e);
+					}
+				}
+			}
+		};
+
+		partnerData.start();
+
 	}
 
 	/**
 	 * Button to get current Location. This demonstrates how to get the current Location as required
 	 * without needing to register a LocationListener.
 	 */
-	public void showMyLocation(View view) {
-		if (mGoogleApiClient.isConnected()) {
-			String msg = "Location = "
-					+ LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+	public void showPartnerLocation(View view) {
+		if(partnerLocation!=null){
+			cameraPosition = new CameraPosition.Builder()
+			.target(partnerLocation).zoom(15.5f).bearing(Utils.bearing)
+			.build();
+			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+		}else{
+			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
+			localquery.fromLocalDatastore();
+			localquery.getInBackground(Utils.sloc, new GetCallback<ParseObject>() {
+				public void done(ParseObject object, ParseException e) {
+					if (e == null) {
+						Utils.logv(classname, "Retrieved Partner's last known location from local database");
+						partnerObject = object;
+						ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
+						partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+
+						partnerMarker = mMap.addMarker(new MarkerOptions()
+						.position(partnerLocation)
+						.title("Bhargav :)")
+						.snippet("Your bubu")
+						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+
+						cameraPosition = new CameraPosition.Builder()
+						.target(partnerLocation).zoom(15.5f).bearing(Utils.bearing)
+						.build();
+						mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+					} else {
+						e.printStackTrace();
+						Utils.logv(classname, "Retrieval of Partner's last known location from local database failed!",e);
+					}
+				}
+			});
 		}
 	}
 
@@ -146,30 +233,60 @@ OnMapReadyCallback {
 	@Override
 	public void onLocationChanged(Location location) {
 		txtvw_your_location.setText("Location = " + location);
-		mypoint = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
-		
-		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
-		query.getInBackground(Utils.bloc, new GetCallback<ParseObject>() {
-		  public void done(ParseObject object, ParseException e) {
-		    if (e == null) {
-		    	object.put("location", mypoint);
-		    	object.saveInBackground(new SaveCallback() {
-					
-					@Override
-					public void done(ParseException e) {
-						if(e==null){
-							Utils.logv(classname, "Updation successful");
-						}else{
-							e.printStackTrace();
-							Utils.logv(classname, "Updation failed",e);
-						}
+		if(myLocation!=null){
+			myLocation.setLatitude(location.getLatitude());
+			myLocation.setLongitude(location.getLongitude());
+		}else myLocation = new ParseGeoPoint(location.getLatitude() , location.getLongitude());
+
+		myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+		handler.post(new Runnable() {
+			public void run() {
+				if(myMarker==null){
+					myMarker = mMap.addMarker(new MarkerOptions()
+					.position(myLatLng)
+					.title("Sayilu :)")
+					.snippet("Yo! it's me")
+					.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+				}else{
+					int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+					if (currentapiVersion < android.os.Build.VERSION_CODES.HONEYCOMB_MR2){
+						MarkerAnimation.animateMarkerToGB(myMarker,myLatLng, new Spherical());
+					} else if(currentapiVersion < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+						MarkerAnimation.animateMarkerToHC(myMarker,myLatLng,new Spherical());
+					} else{
+						MarkerAnimation.animateMarkerToICS(myMarker,myLatLng,new Spherical());
 					}
-				});
-		    } else {
-		    	e.printStackTrace();
-				Utils.logv(classname, "Object retrival failed",e);
-		    }
-		  }
+				}
+			};
+		});
+
+
+		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
+		//Updating the row with the bloc objectId
+		query.getInBackground(Utils.bloc, new GetCallback<ParseObject>() {
+			public void done(ParseObject object, ParseException e) {
+				if (e == null) {
+					myObject = object;
+					object.put("location", myLocation);
+					object.pinInBackground();
+					object.saveInBackground(new SaveCallback() {
+
+						@Override
+						public void done(ParseException e) {
+							if(e==null){
+								Utils.logv(classname, "Updation successful");
+							}else{
+								e.printStackTrace();
+								Utils.logv(classname, "Updation failed",e);
+							}
+						}
+					});
+				} else {
+					e.printStackTrace();
+					Utils.logv(classname, "Object retrival failed",e);
+				}
+			}
 		});
 	}
 
@@ -189,7 +306,6 @@ OnMapReadyCallback {
 	 */
 	@Override
 	public void onConnectionSuspended(int cause) {
-		// Do nothing
 		Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT).show();
 	}
 
@@ -198,13 +314,47 @@ OnMapReadyCallback {
 	 */
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
-		// Do nothing
 		Toast.makeText(this, "Connection Failed", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public boolean onMyLocationButtonClick() {
-		Toast.makeText(this, "My Location button clicked", Toast.LENGTH_SHORT).show();
+
+		if(myLatLng!=null){
+			cameraPosition = new CameraPosition.Builder()
+			.target(myLatLng).zoom(15.5f).bearing(Utils.bearing)
+			.build();
+			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+		}else{
+			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
+			localquery.fromLocalDatastore();
+			localquery.getInBackground(Utils.bloc, new GetCallback<ParseObject>() {
+				public void done(ParseObject object, ParseException e) {
+					if (e == null) {
+						Utils.logv(classname, "Retrieved my last known location from local database");
+						myObject = object;
+						ParseGeoPoint myPoint = myObject.getParseGeoPoint("location");
+						myLatLng = new LatLng(myPoint.getLatitude(), myPoint.getLongitude());
+
+						myMarker = mMap.addMarker(new MarkerOptions()
+						.position(myLatLng)
+						.title("Sayilu :)")
+						.snippet("Yo! it's me")
+						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
+
+						cameraPosition = new CameraPosition.Builder()
+						.target(myLatLng).zoom(15.5f).bearing(Utils.bearing)
+						.build();
+						mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+					} else {
+						e.printStackTrace();
+						Utils.logv(classname, "Retrieval of Partner's last known location from local database failed!",e);
+					}
+				}
+			});
+		}
+
+
 		// Return false so that we don't consume the event and the default behavior still occurs
 		// (the camera animates to the user's current position).
 		return false;
