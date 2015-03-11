@@ -8,6 +8,7 @@ public class Utils {
 	
 	public static String myLoc = "yhsPYjqyT1";
 	public static String partnerLoc = "ruvfqOS1Pt";
+	public static String parseChannel = "partner";
 	
 	/**
 	 * Default map center. Use when data is not available.

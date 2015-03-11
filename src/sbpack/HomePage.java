@@ -40,6 +40,7 @@ import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
@@ -105,7 +106,7 @@ OnInfoWindowClickListener{
 			BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_marker);
 			Bitmap b=bd.getBitmap();
 			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
-			ImageButton imgvw_partnerlocatin = (ImageButton) findViewById(R.id.imgvw_partnerlocatin);
+			ImageButton imgvw_partnerlocatin = (ImageButton) findViewById(R.id.imgvw_partnerlocation);
 			imgvw_partnerlocatin.setImageResource(R.drawable.icon_search);
 
 			TextView txtvw_app_title = (TextView) findViewById(R.id.txtvw_app_title);
@@ -444,7 +445,14 @@ OnInfoWindowClickListener{
 
 	@Override
 	public void onInfoWindowClick(Marker arg0) {
-		// TODO Auto-generated method stub
 
+	}
+	
+	public void pingPartner(View view){
+		ParsePush push = new ParsePush();
+		push.setChannel(Utils.parseChannel);
+		push.setMessage("Knock knock :)");
+		push.sendInBackground();
+		Toast.makeText(getBaseContext(), "Pinging partner...", Toast.LENGTH_SHORT).show();
 	}
 }

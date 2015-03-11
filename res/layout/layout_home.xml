@@ -44,7 +44,7 @@
             class="com.google.android.gms.maps.SupportMapFragment" />
 
         <ImageButton
-            android:id="@+id/imgvw_partnerlocatin"
+            android:id="@+id/imgvw_partnerlocation"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentRight="true"
@@ -55,6 +55,18 @@
             android:padding="2dp"
             android:scaleType="fitCenter"
             android:src="@drawable/icon_heart" />
+        <ImageButton
+            android:id="@+id/imgvw_pingpartner"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="128dp"
+            android:background="@color/translucent_white"
+            android:onClick="pingPartner"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/icon_ping" />
     </RelativeLayout>
 	<RelativeLayout
 	    android:id="@+id/rlay_msg"
