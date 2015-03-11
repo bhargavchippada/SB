@@ -71,6 +71,7 @@
             android:layout_margin="8dp"
             android:paddingLeft="4dp"
             android:hint="Type message"
+            android:fontFamily="sans-serif"
             android:textColor="@android:color/black"
             android:background="@android:color/white"/>
         <ImageButton 

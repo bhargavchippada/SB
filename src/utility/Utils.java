@@ -22,7 +22,7 @@ public class Utils {
 	 */
 	public static final int bearing = 0; // Orientation to north
 	
-	public static final long mapInterval =16*5;
+	public static final long mapInterval =16*20;
 	
 	/**
 	 * Prints debugging log messages

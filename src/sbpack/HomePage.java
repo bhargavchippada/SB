@@ -2,6 +2,7 @@ package sbpack;
 
 import sbpack.LatLngInterpolator.Linear;
 import utility.MarkerAnimation;
+import utility.TimeFormat;
 import utility.Utils;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -161,7 +162,7 @@ OnInfoWindowClickListener{
 							Utils.logv(classname, "Partner location retrival successful");
 							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
 							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
-							partnerMsg = partnerObject.getString("msg");
+							partnerMsg = partnerObject.getString("msg")+"\n\nOnline "+TimeFormat.RelativeTime(partnerObject.getUpdatedAt());
 							handler.post(new Runnable() {
 								public void run() {
 									partnerMarker = mMap.addMarker(new MarkerOptions()
@@ -182,7 +183,7 @@ OnInfoWindowClickListener{
 							// Success!
 							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
 							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
-							partnerMsg = partnerObject.getString("msg");
+							partnerMsg = partnerObject.getString("msg")+"\n\nOnline "+TimeFormat.RelativeTime(partnerObject.getUpdatedAt());;
 							Utils.logv(classname, "Partner object fetch successful");
 							handler.post(new Runnable() {
 								public void run() {

@@ -24,14 +24,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
 
         <TextView
             android:id="@+id/snippet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="14sp" />
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif"
+            android:textColor="@android:color/black" />
     </LinearLayout>
 
 </LinearLayout>
