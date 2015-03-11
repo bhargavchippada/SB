@@ -1,7 +1,6 @@
 package sbpack;
 
 import sbpack.LatLngInterpolator.Linear;
-import sbpack.LatLngInterpolator.Spherical;
 import utility.MarkerAnimation;
 import utility.Utils;
 import android.graphics.Bitmap;
@@ -11,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +51,7 @@ OnMapReadyCallback {
 
 	public static String classname = "HomePage";
 	private GoogleApiClient mGoogleApiClient;
-	private TextView txtvw_your_location;
+
 	private ParseGeoPoint myLocation;
 	private ParseObject myObject;
 	private LatLng myLatLng;
@@ -68,6 +68,11 @@ OnMapReadyCallback {
 	private CameraPosition cameraPosition;
 	
 	private boolean secure = true;
+	
+	EditText edtxt_msgcontent;
+	
+	private String partnerMsg="It's your partner";
+	private String myMsg="Yo! It's me";
 
 	// These settings are the same as the settings for the map. They will in fact give you updates
 	// at the maximal rates currently possible.
@@ -80,7 +85,6 @@ OnMapReadyCallback {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.layout_home);
-		txtvw_your_location = (TextView) findViewById(R.id.txtvw_your_location);
 
 		SupportMapFragment mapFragment =
 				(SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.frag_map);
@@ -108,6 +112,8 @@ OnMapReadyCallback {
 			Bitmap b=bd.getBitmap();
 			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
 		}
+		
+		edtxt_msgcontent = (EditText) findViewById(R.id.edtxt_msgcontent);
 	}
 
 	@Override
@@ -137,25 +143,26 @@ OnMapReadyCallback {
 		.build();
 		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-		//Retrieve partners last location
-		final ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
 		Thread partnerData=new Thread(){
 			public void run(){
+				//Retrieve partners last location
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
 				while(true){
 					if(partnerObject==null){
 						try {
-							partnerObject = query.get(Utils.myLoc);
+							partnerObject = query.get(Utils.partnerLoc);
 							partnerObject.pinInBackground();
 							// Success!
 							Utils.logv(classname, "Partner location retrival successful");
 							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
 							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+							partnerMsg = partnerObject.getString("msg");
 							handler.post(new Runnable() {
 								public void run() {
 									partnerMarker = mMap.addMarker(new MarkerOptions()
 									.position(partnerLocation)
 									.title("partner :)")
-									.snippet("This is partner's content")
+									.snippet(partnerMsg)
 									.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 								};
 							});
@@ -170,6 +177,7 @@ OnMapReadyCallback {
 							// Success!
 							ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
 							partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
+							partnerMsg = partnerObject.getString("msg");
 							Utils.logv(classname, "Partner object fetch successful");
 							handler.post(new Runnable() {
 								public void run() {
@@ -180,6 +188,11 @@ OnMapReadyCallback {
 										MarkerAnimation.animateMarkerToHC(partnerMarker,partnerLocation,new Linear());
 									} else{
 										MarkerAnimation.animateMarkerToICS(partnerMarker,partnerLocation,new Linear());
+									}
+									if(!partnerMarker.getSnippet().equals(partnerMsg)){
+										partnerMarker.setSnippet(partnerMsg);
+										partnerMarker.hideInfoWindow();
+										partnerMarker.showInfoWindow();
 									}
 								};
 							});
@@ -217,24 +230,26 @@ OnMapReadyCallback {
 		}else{
 			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
 			localquery.fromLocalDatastore();
-			localquery.getInBackground(Utils.myLoc, new GetCallback<ParseObject>() {
+			localquery.getInBackground(Utils.partnerLoc, new GetCallback<ParseObject>() {
 				public void done(ParseObject object, ParseException e) {
 					if (e == null) {
 						Utils.logv(classname, "Retrieved Partner's last known location from local database");
 						partnerObject = object;
 						ParseGeoPoint partnerPoint = partnerObject.getParseGeoPoint("location");
 						partnerLocation = new LatLng(partnerPoint.getLatitude(), partnerPoint.getLongitude());
-
+						partnerMsg = partnerObject.getString("msg");
 						partnerMarker = mMap.addMarker(new MarkerOptions()
 						.position(partnerLocation)
 						.title("partner :)")
-						.snippet("This is partner content")
+						.snippet(partnerMsg)
 						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 
 						cameraPosition = new CameraPosition.Builder()
 						.target(partnerLocation).zoom(15.5f).bearing(Utils.bearing)
 						.build();
 						mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+						
+						Toast.makeText(getBaseContext(),"No internet connection", Toast.LENGTH_SHORT).show();
 					} else {
 						e.printStackTrace();
 						Utils.logv(classname, "Retrieval of Partner's last known location from local database failed!",e);
@@ -249,7 +264,6 @@ OnMapReadyCallback {
 	 */
 	@Override
 	public void onLocationChanged(Location location) {
-		txtvw_your_location.setText("Location = " + location);
 		if(myLocation!=null){
 			myLocation.setLatitude(location.getLatitude());
 			myLocation.setLongitude(location.getLongitude());
@@ -263,7 +277,7 @@ OnMapReadyCallback {
 					myMarker = mMap.addMarker(new MarkerOptions()
 					.position(myLatLng)
 					.title("me :)")
-					.snippet("Yo! it's me")
+					.snippet(myMsg)
 					.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 				}else{
 					int currentapiVersion = android.os.Build.VERSION.SDK_INT;
@@ -274,17 +288,22 @@ OnMapReadyCallback {
 					} else{
 						MarkerAnimation.animateMarkerToICS(myMarker,myLatLng,new Linear());
 					}
+					if(!myMarker.getSnippet().equals(myMsg)){
+						myMarker.setSnippet(myMsg);
+						myMarker.hideInfoWindow();
+						myMarker.showInfoWindow();
+					}
 				}
 			};
 		});
 
 
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
-		//Updating the row with the bloc objectId
-		query.getInBackground(Utils.partnerLoc, new GetCallback<ParseObject>() {
+		query.getInBackground(Utils.myLoc, new GetCallback<ParseObject>() {
 			public void done(ParseObject object, ParseException e) {
 				if (e == null) {
 					myObject = object;
+					myMsg = myObject.getString("msg");
 					object.put("location", myLocation);
 					object.pinInBackground();
 					object.saveInBackground(new SaveCallback() {
@@ -345,18 +364,18 @@ OnMapReadyCallback {
 		}else{
 			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
 			localquery.fromLocalDatastore();
-			localquery.getInBackground(Utils.partnerLoc, new GetCallback<ParseObject>() {
+			localquery.getInBackground(Utils.myLoc, new GetCallback<ParseObject>() {
 				public void done(ParseObject object, ParseException e) {
 					if (e == null) {
 						Utils.logv(classname, "Retrieved my last known location from local database");
 						myObject = object;
 						ParseGeoPoint myPoint = myObject.getParseGeoPoint("location");
 						myLatLng = new LatLng(myPoint.getLatitude(), myPoint.getLongitude());
-
+						myMsg = myObject.getString("msg");
 						myMarker = mMap.addMarker(new MarkerOptions()
 						.position(myLatLng)
 						.title("me :)")
-						.snippet("Yo! it's me")
+						.snippet(myMsg)
 						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 
 						cameraPosition = new CameraPosition.Builder()
@@ -375,5 +394,45 @@ OnMapReadyCallback {
 		// Return false so that we don't consume the event and the default behavior still occurs
 		// (the camera animates to the user's current position).
 		return false;
+	}
+
+	public void sendMsg(View view){
+		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
+		query.getInBackground(Utils.myLoc, new GetCallback<ParseObject>() {
+			public void done(ParseObject object, ParseException e) {
+				if (e == null) {
+					myObject = object;
+					object.put("msg", edtxt_msgcontent.getText().toString());
+					object.pinInBackground();
+					object.saveInBackground(new SaveCallback() {
+
+						@Override
+						public void done(ParseException e) {
+							if(e==null){
+								Utils.logv(classname, "Msg Updation successful");
+								edtxt_msgcontent.setText("");
+								myMsg = myObject.getString("msg");
+								Toast.makeText(getBaseContext(),"message sent successfully", Toast.LENGTH_SHORT).show();
+								handler.post(new Runnable() {
+									public void run() {
+										myMarker.setSnippet(myMsg);
+										myMarker.hideInfoWindow();
+										myMarker.showInfoWindow();
+									};
+								});
+							}else{
+								e.printStackTrace();
+								Utils.logv(classname, "Msg Updation failed",e);
+								Toast.makeText(getBaseContext(),"Failed to send message", Toast.LENGTH_SHORT).show();
+							}
+						}
+					});
+				} else {
+					e.printStackTrace();
+					Utils.logv(classname, "For msg Object retrival failed",e);
+					Toast.makeText(getBaseContext(),"Failed to send message", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 	}
 }

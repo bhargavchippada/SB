@@ -6,8 +6,8 @@ import android.util.Log;
 
 public class Utils {
 	
-	public static String partnerLoc = "yhsPYjqyT1";
-	public static String myLoc = "ruvfqOS1Pt";
+	public static String myLoc = "yhsPYjqyT1";
+	public static String partnerLoc = "ruvfqOS1Pt";
 	
 	/**
 	 * Default map center. Use when data is not available.

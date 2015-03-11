@@ -21,7 +21,7 @@ public class LockPage extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//startActivity(new Intent(getBaseContext(),HomePage.class));
+		startActivity(new Intent(getBaseContext(),HomePage.class));
 		setContentView(R.layout.layout_lock);
 
 		edtxt_password = (EditText) findViewById(R.id.edtxt_password);

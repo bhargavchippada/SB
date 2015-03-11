@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_height="match_parent" >
 
     <RelativeLayout
+        android:id="@+id/rlay_titlebar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:layout_alignParentTop="true"
         android:background="@color/app_color"
         android:orientation="horizontal" >
 
@@ -25,48 +26,63 @@
             android:layout_toRightOf="@+id/imgvw_app_icon"
             android:gravity="center"
             android:text="Happy Birthday Sayilu!!!:)"
-            android:textSize="22sp"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:textSize="22sp" />
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/txtvw_your_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Your Location"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/txtvw_other_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Other Location"
-        android:textSize="14sp" />
-
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:id="@+id/rlay_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rlay_titlebar"
+        android:layout_above="@+id/rlay_msg" >
 
         <fragment
             android:id="@+id/frag_map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             class="com.google.android.gms.maps.SupportMapFragment" />
-        
-        <ImageButton 
+
+        <ImageButton
             android:id="@+id/imgvw_partnerlocatin"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:padding="2dp"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="64dp"
             android:layout_marginRight="10dp"
-            android:onClick="showPartnerLocation"
+            android:layout_marginTop="64dp"
             android:background="@color/translucent_white"
-            android:src="@drawable/icon_heart"
-            android:scaleType="fitCenter"/>
+            android:onClick="showPartnerLocation"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/icon_heart" />
     </RelativeLayout>
-
-</LinearLayout>
+	<RelativeLayout
+	    android:id="@+id/rlay_msg"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:background="@color/app_color" >
+        <EditText 
+            android:id="@+id/edtxt_msgcontent"
+            android:layout_toLeftOf="@+id/imgbtn_send"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="32dp"
+            android:layout_margin="8dp"
+            android:paddingLeft="4dp"
+            android:hint="Type message"
+            android:textColor="@android:color/black"
+            android:background="@android:color/white"/>
+        <ImageButton 
+            android:id="@+id/imgbtn_send"
+            android:layout_alignParentRight="true"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/icon_send"
+            android:scaleType="fitCenter"
+            android:layout_centerVertical="true"
+            android:onClick="sendMsg"/>
+	</RelativeLayout>
+</RelativeLayout>
