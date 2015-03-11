@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -47,7 +48,8 @@ ConnectionCallbacks,
 OnConnectionFailedListener,
 LocationListener,
 OnMyLocationButtonClickListener,
-OnMapReadyCallback {
+OnMapReadyCallback,
+OnInfoWindowClickListener{
 
 	public static String classname = "HomePage";
 	private GoogleApiClient mGoogleApiClient;
@@ -66,11 +68,11 @@ OnMapReadyCallback {
 	private GoogleMap mMap;
 	final Handler handler = new Handler();
 	private CameraPosition cameraPosition;
-	
+
 	private boolean secure = true;
-	
+
 	EditText edtxt_msgcontent;
-	
+
 	private String partnerMsg="It's your partner";
 	private String myMsg="Yo! It's me";
 
@@ -97,14 +99,14 @@ OnMapReadyCallback {
 		.build();
 
 		secure = getIntent().getBooleanExtra("secure", true);
-		
+
 		if(secure){
 			BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_marker);
 			Bitmap b=bd.getBitmap();
 			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
 			ImageButton imgvw_partnerlocatin = (ImageButton) findViewById(R.id.imgvw_partnerlocatin);
 			imgvw_partnerlocatin.setImageResource(R.drawable.icon_search);
-			
+
 			TextView txtvw_app_title = (TextView) findViewById(R.id.txtvw_app_title);
 			txtvw_app_title.setText("Location Tracker");
 		}else{
@@ -112,7 +114,7 @@ OnMapReadyCallback {
 			Bitmap b=bd.getBitmap();
 			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
 		}
-		
+
 		edtxt_msgcontent = (EditText) findViewById(R.id.edtxt_msgcontent);
 	}
 
@@ -142,6 +144,9 @@ OnMapReadyCallback {
 		.target(Utils.center).zoom(Utils.zoom).bearing(Utils.bearing)
 		.build();
 		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+		mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+		mMap.setOnInfoWindowClickListener(this);
 
 		Thread partnerData=new Thread(){
 			public void run(){
@@ -248,7 +253,7 @@ OnMapReadyCallback {
 						.target(partnerLocation).zoom(15.5f).bearing(Utils.bearing)
 						.build();
 						mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-						
+
 						Toast.makeText(getBaseContext(),"No internet connection", Toast.LENGTH_SHORT).show();
 					} else {
 						e.printStackTrace();
@@ -434,5 +439,11 @@ OnMapReadyCallback {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void onInfoWindowClick(Marker arg0) {
+		// TODO Auto-generated method stub
+
 	}
 }
