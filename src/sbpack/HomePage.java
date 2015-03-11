@@ -43,6 +43,7 @@ import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+import com.parse.SendCallback;
 
 public class HomePage extends FragmentActivity 
 implements
@@ -450,9 +451,19 @@ OnInfoWindowClickListener{
 	
 	public void pingPartner(View view){
 		ParsePush push = new ParsePush();
-		push.setChannel(Utils.parseChannel);
+		push.setChannel("");
 		push.setMessage("Knock knock :)");
-		push.sendInBackground();
-		Toast.makeText(getBaseContext(), "Pinging partner...", Toast.LENGTH_SHORT).show();
+		push.sendInBackground(new SendCallback() {
+			
+			@Override
+			public void done(ParseException e) {
+				if(e==null){
+					Toast.makeText(getBaseContext(), "Pinging partner...", Toast.LENGTH_SHORT).show();
+				}else{
+					Toast.makeText(getBaseContext(), "Pinging partner failed!!", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
 	}
 }
