@@ -24,7 +24,7 @@ public class MarkerAnimation {
 		final Handler handler = new Handler();
 		final long start = SystemClock.uptimeMillis();
 		final Interpolator interpolator = new AccelerateDecelerateInterpolator();
-		final float durationInMs = 16*30;
+		final float durationInMs = Utils.mapInterval;
 
 		handler.post(new Runnable() {
 			long elapsed;
@@ -63,7 +63,7 @@ public class MarkerAnimation {
 			}
 		});
 		valueAnimator.setFloatValues(0, 1); // Ignored.
-		valueAnimator.setDuration(16*30);
+		valueAnimator.setDuration(Utils.mapInterval);
 		valueAnimator.start();
 	}
 
@@ -77,7 +77,7 @@ public class MarkerAnimation {
 		};
 		Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
 		ObjectAnimator animator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
-		animator.setDuration(16*30);
+		animator.setDuration(Utils.mapInterval);
 		animator.start();
 	}
 } 

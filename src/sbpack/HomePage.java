@@ -1,5 +1,6 @@
 package sbpack;
 
+import sbpack.LatLngInterpolator.Linear;
 import sbpack.LatLngInterpolator.Spherical;
 import utility.MarkerAnimation;
 import utility.Utils;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,12 +66,14 @@ OnMapReadyCallback {
 	private GoogleMap mMap;
 	final Handler handler = new Handler();
 	private CameraPosition cameraPosition;
+	
+	private boolean secure = true;
 
 	// These settings are the same as the settings for the map. They will in fact give you updates
 	// at the maximal rates currently possible.
 	private static final LocationRequest REQUEST = LocationRequest.create()
 			.setInterval(5000)         // 5 seconds
-			.setFastestInterval(16*30)    // 16ms = 60fps; i slowed down the rate by 30 times
+			.setFastestInterval(Utils.mapInterval)    // 16ms = 60fps; i slowed down the rate by 5 times
 			.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 	@Override
@@ -88,9 +92,22 @@ OnMapReadyCallback {
 		.addOnConnectionFailedListener(this)
 		.build();
 
-		BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_curved_heart);
-		Bitmap b=bd.getBitmap();
-		smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
+		secure = getIntent().getBooleanExtra("secure", true);
+		
+		if(secure){
+			BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_marker);
+			Bitmap b=bd.getBitmap();
+			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
+			ImageButton imgvw_partnerlocatin = (ImageButton) findViewById(R.id.imgvw_partnerlocatin);
+			imgvw_partnerlocatin.setImageResource(R.drawable.icon_search);
+			
+			TextView txtvw_app_title = (TextView) findViewById(R.id.txtvw_app_title);
+			txtvw_app_title.setText("Location Tracker");
+		}else{
+			BitmapDrawable bd=(BitmapDrawable) getResources().getDrawable(R.drawable.icon_curved_heart);
+			Bitmap b=bd.getBitmap();
+			smallHeartBitmap=Bitmap.createScaledBitmap(b, b.getWidth()/4,b.getHeight()/4, false);
+		}
 	}
 
 	@Override
@@ -127,7 +144,7 @@ OnMapReadyCallback {
 				while(true){
 					if(partnerObject==null){
 						try {
-							partnerObject = query.get(Utils.sloc);
+							partnerObject = query.get(Utils.myLoc);
 							partnerObject.pinInBackground();
 							// Success!
 							Utils.logv(classname, "Partner location retrival successful");
@@ -137,8 +154,8 @@ OnMapReadyCallback {
 								public void run() {
 									partnerMarker = mMap.addMarker(new MarkerOptions()
 									.position(partnerLocation)
-									.title("Bhargav :)")
-									.snippet("Your bubu")
+									.title("partner :)")
+									.snippet("This is partner's content")
 									.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 								};
 							});
@@ -158,11 +175,11 @@ OnMapReadyCallback {
 								public void run() {
 									int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 									if (currentapiVersion < android.os.Build.VERSION_CODES.HONEYCOMB_MR2){
-										MarkerAnimation.animateMarkerToGB(partnerMarker,partnerLocation, new Spherical());
+										MarkerAnimation.animateMarkerToGB(partnerMarker,partnerLocation, new Linear());
 									} else if(currentapiVersion < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-										MarkerAnimation.animateMarkerToHC(partnerMarker,partnerLocation,new Spherical());
+										MarkerAnimation.animateMarkerToHC(partnerMarker,partnerLocation,new Linear());
 									} else{
-										MarkerAnimation.animateMarkerToICS(partnerMarker,partnerLocation,new Spherical());
+										MarkerAnimation.animateMarkerToICS(partnerMarker,partnerLocation,new Linear());
 									}
 								};
 							});
@@ -174,7 +191,7 @@ OnMapReadyCallback {
 					}
 
 					try {
-						Thread.sleep(16*30);
+						Thread.sleep(Utils.mapInterval);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						Utils.logv(classname, "Partner Thread sleep interrupted",e);
@@ -200,7 +217,7 @@ OnMapReadyCallback {
 		}else{
 			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
 			localquery.fromLocalDatastore();
-			localquery.getInBackground(Utils.sloc, new GetCallback<ParseObject>() {
+			localquery.getInBackground(Utils.myLoc, new GetCallback<ParseObject>() {
 				public void done(ParseObject object, ParseException e) {
 					if (e == null) {
 						Utils.logv(classname, "Retrieved Partner's last known location from local database");
@@ -210,8 +227,8 @@ OnMapReadyCallback {
 
 						partnerMarker = mMap.addMarker(new MarkerOptions()
 						.position(partnerLocation)
-						.title("Bhargav :)")
-						.snippet("Your bubu")
+						.title("partner :)")
+						.snippet("This is partner content")
 						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 
 						cameraPosition = new CameraPosition.Builder()
@@ -245,17 +262,17 @@ OnMapReadyCallback {
 				if(myMarker==null){
 					myMarker = mMap.addMarker(new MarkerOptions()
 					.position(myLatLng)
-					.title("Sayilu :)")
+					.title("me :)")
 					.snippet("Yo! it's me")
 					.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 				}else{
 					int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 					if (currentapiVersion < android.os.Build.VERSION_CODES.HONEYCOMB_MR2){
-						MarkerAnimation.animateMarkerToGB(myMarker,myLatLng, new Spherical());
+						MarkerAnimation.animateMarkerToGB(myMarker,myLatLng, new Linear());
 					} else if(currentapiVersion < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-						MarkerAnimation.animateMarkerToHC(myMarker,myLatLng,new Spherical());
+						MarkerAnimation.animateMarkerToHC(myMarker,myLatLng,new Linear());
 					} else{
-						MarkerAnimation.animateMarkerToICS(myMarker,myLatLng,new Spherical());
+						MarkerAnimation.animateMarkerToICS(myMarker,myLatLng,new Linear());
 					}
 				}
 			};
@@ -264,7 +281,7 @@ OnMapReadyCallback {
 
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationSB");
 		//Updating the row with the bloc objectId
-		query.getInBackground(Utils.bloc, new GetCallback<ParseObject>() {
+		query.getInBackground(Utils.partnerLoc, new GetCallback<ParseObject>() {
 			public void done(ParseObject object, ParseException e) {
 				if (e == null) {
 					myObject = object;
@@ -328,7 +345,7 @@ OnMapReadyCallback {
 		}else{
 			ParseQuery<ParseObject> localquery = ParseQuery.getQuery("LocationSB");
 			localquery.fromLocalDatastore();
-			localquery.getInBackground(Utils.bloc, new GetCallback<ParseObject>() {
+			localquery.getInBackground(Utils.partnerLoc, new GetCallback<ParseObject>() {
 				public void done(ParseObject object, ParseException e) {
 					if (e == null) {
 						Utils.logv(classname, "Retrieved my last known location from local database");
@@ -338,7 +355,7 @@ OnMapReadyCallback {
 
 						myMarker = mMap.addMarker(new MarkerOptions()
 						.position(myLatLng)
-						.title("Sayilu :)")
+						.title("me :)")
 						.snippet("Yo! it's me")
 						.icon(BitmapDescriptorFactory.fromBitmap(smallHeartBitmap)));
 

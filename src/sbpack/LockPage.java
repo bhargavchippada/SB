@@ -13,7 +13,6 @@ import com.example.sb.R;
 
 public class LockPage extends Activity{
 	public static String classname = "LockPage";
-	private String password = "yo";
 
 	EditText edtxt_password;
 	Button btn_login;
@@ -22,7 +21,7 @@ public class LockPage extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		startActivity(new Intent(getBaseContext(),HomePage.class));
+		//startActivity(new Intent(getBaseContext(),HomePage.class));
 		setContentView(R.layout.layout_lock);
 
 		edtxt_password = (EditText) findViewById(R.id.edtxt_password);
@@ -33,10 +32,17 @@ public class LockPage extends Activity{
 
 			@Override
 			public void onClick(View v) {
-				if(edtxt_password.getText().toString().equals(password)){
-					startActivity(new Intent(getBaseContext(),HomePage.class));
+				String typed_password = edtxt_password.getText().toString();
+				if(typed_password.equals("yo")){
+					Intent intent = new Intent(getBaseContext(),HomePage.class);
+					intent.putExtra("secure", false);
+					startActivity(intent);
+				}else if(typed_password.equals("secure")){
+					Intent intent = new Intent(getBaseContext(),HomePage.class);
+					intent.putExtra("secure", true);
+					startActivity(intent);
 				}else{
-					txtvw_status.setText("Ooops! try again..");
+					txtvw_status.setText("o_O >_< :/");
 				}
 			}
 		});

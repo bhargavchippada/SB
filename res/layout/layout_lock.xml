@@ -9,17 +9,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Are you a S or B?"
+        android:text="$#"
         android:textColor="@android:color/white"
-        android:textSize="28sp" />
+        android:textSize="64sp" />
 
     <EditText
         android:id="@+id/edtxt_password"
         android:layout_width="256dp"
         android:layout_height="48dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:background="@android:color/white"
-        android:hint="Password"
+        android:hint="\? \? \?"
         android:inputType="text"
         android:paddingLeft="8dp"
         android:textColor="@android:color/black" />
@@ -30,7 +30,7 @@
         android:layout_height="48dp"
         android:layout_marginTop="16dp"
         android:background="@android:color/white"
-        android:text="login"
+        android:text="*"
         android:textColor="@color/app_color"
         android:textSize="22sp" />
 

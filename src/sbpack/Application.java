@@ -1,5 +1,7 @@
 package sbpack;
 
+import utility.FontsOverride;
+
 import com.parse.Parse;
 import com.parse.ParseInstallation;
 
@@ -8,7 +10,7 @@ public class Application extends android.app.Application{
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		//FontsOverride.overrideFont(getApplicationContext(), "MONOSPACE","fonts/CuteLove-Medium.ttf");
+		FontsOverride.overrideFont(getApplicationContext(), "MONOSPACE","fonts/CuteLove-Medium.ttf");
 		
 		// Enable Local Datastore.
 		Parse.enableLocalDatastore(this);

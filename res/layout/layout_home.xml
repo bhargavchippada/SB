@@ -7,7 +7,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="@android:color/white"
+        android:background="@color/app_color"
         android:orientation="horizontal" >
 
         <ImageView
@@ -16,7 +16,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
             android:padding="8dp"
-            android:src="@drawable/icon_sb" />
+            android:src="@drawable/icon_sb_red" />
 
         <TextView
             android:id="@+id/txtvw_app_title"
@@ -24,8 +24,9 @@
             android:layout_height="match_parent"
             android:layout_toRightOf="@+id/imgvw_app_icon"
             android:gravity="center"
-            android:text="Hello :)"
-            android:textSize="14sp" />
+            android:text="Happy Birthday Sayilu!!!:)"
+            android:textSize="22sp"
+            android:textColor="@android:color/white" />
     </RelativeLayout>
 
     <TextView
@@ -55,6 +56,7 @@
             class="com.google.android.gms.maps.SupportMapFragment" />
         
         <ImageButton 
+            android:id="@+id/imgvw_partnerlocatin"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:padding="2dp"

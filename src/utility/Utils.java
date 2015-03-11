@@ -6,8 +6,8 @@ import android.util.Log;
 
 public class Utils {
 	
-	public static String bloc = "yhsPYjqyT1";
-	public static String sloc = "ruvfqOS1Pt";
+	public static String partnerLoc = "yhsPYjqyT1";
+	public static String myLoc = "ruvfqOS1Pt";
 	
 	/**
 	 * Default map center. Use when data is not available.
@@ -21,6 +21,8 @@ public class Utils {
 	 * Default map bearing value.
 	 */
 	public static final int bearing = 0; // Orientation to north
+	
+	public static final long mapInterval =16*5;
 	
 	/**
 	 * Prints debugging log messages
